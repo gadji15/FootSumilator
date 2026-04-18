@@ -134,6 +134,15 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
     return { x, y, vx, vy, intensity, trail: newTrail, isAttacking }
   }, [])
 
+  // Store ball states in refs for animation loop to avoid dependency issues
+  const ballARef = useRef(ballA)
+  const ballBRef = useRef(ballB)
+  
+  useEffect(() => {
+    ballARef.current = ballA
+    ballBRef.current = ballB
+  }, [ballA, ballB])
+
   useEffect(() => {
     if (!isPlaying) return
 
@@ -141,12 +150,15 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
       const deltaMs = lastTimeRef.current ? currentTime - lastTimeRef.current : 16
       
       if (deltaMs >= 25) { // ~40fps for fluid motion
+        const currentBallA = ballARef.current
+        const currentBallB = ballBRef.current
+        
         setBallA(prev => {
-          const newBall = updateBall(prev, ballB, true, deltaMs)
+          const newBall = updateBall(prev, currentBallB, true, deltaMs)
           return { ...newBall, isAttacking: attackerRef.current === 'A' }
         })
         setBallB(prev => {
-          const newBall = updateBall(prev, ballA, false, deltaMs)
+          const newBall = updateBall(prev, currentBallA, false, deltaMs)
           return { ...newBall, isAttacking: attackerRef.current === 'B' }
         })
         
@@ -165,7 +177,7 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
 
     frameRef.current = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(frameRef.current)
-  }, [isPlaying, updateBall, ballA, ballB])
+  }, [isPlaying, updateBall])
 
   // Calculate conflict and goal threat
   useEffect(() => {
@@ -413,8 +425,8 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
         <div 
           className="relative rounded-full border-[2px] flex items-center justify-center"
           style={{ 
-            width: 'clamp(32px, 7vw, 42px)',
-            height: 'clamp(32px, 7vw, 42px)',
+            width: 'clamp(36px, 8vw, 48px)',
+            height: 'clamp(36px, 8vw, 48px)',
             backgroundColor: teamBColor,
             borderColor: `rgba(255,255,255,${0.4 + ballB.intensity * 0.2})`,
             boxShadow: `
@@ -425,7 +437,7 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
             `,
           }}
         >
-          <span className="font-bold text-white text-[10px] lg:text-[11px] select-none" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+          <span className="font-bold text-white text-[11px] lg:text-xs select-none" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             B
           </span>
         </div>
