@@ -76,13 +76,14 @@ export function SimulationViewer({
       {/* Mobile-first main content wrapper */}
       <div className="flex-1 flex flex-col min-h-0 lg:p-0">
         {/* Mobile: Ultra-compact scoreboard bar at the very top */}
-        <div className="lg:hidden shrink-0 flex items-center justify-center py-1.5 bg-black/40 backdrop-blur-sm border-b border-white/5">
+        <div className="lg:hidden shrink-0 flex items-center justify-center py-2 bg-black/50 backdrop-blur-md border-b border-white/5">
           <MatchScoreboard
             teamA={teamA}
             teamB={teamB}
             timer={timer}
             phase={phase}
             competition={competition}
+            format={format}
           />
         </div>
 
@@ -96,6 +97,8 @@ export function SimulationViewer({
               timer={timer}
               phase={phase}
               competition={competition}
+              format={format}
+              showDetails={true}
             />
           </div>
 
@@ -106,6 +109,8 @@ export function SimulationViewer({
               teamBColor={teamB.color}
               isPlaying={isPlaying}
               phase={phase}
+              format={format}
+              competition={competition}
             />
           </div>
 
@@ -126,24 +131,53 @@ export function SimulationViewer({
           </div>
         </div>
 
-        {/* Mobile timeline - directly below stage, always visible */}
-        <div className="lg:hidden shrink-0 px-3 py-2 bg-black/50 backdrop-blur-sm border-t border-white/5">
+        {/* Mobile timeline and info - directly below stage */}
+        <div className="lg:hidden shrink-0 px-3 py-2.5 bg-black/60 backdrop-blur-md border-t border-white/8">
+          {/* Match info badges */}
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold uppercase tracking-wide">
+              {competition}
+            </span>
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/10 text-white/70 font-mono">
+              {format}
+            </span>
+            {allowExtraTime && (
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-medium">
+                +ET
+              </span>
+            )}
+            {allowPenalties && (
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-medium">
+                PK
+              </span>
+            )}
+          </div>
+          
+          {/* Timeline */}
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono text-white/60 tabular-nums w-6">
+            <span className="text-[10px] font-mono text-white/60 tabular-nums w-8 text-right">
               {currentMinute}&apos;
             </span>
-            <div className="flex-1 relative h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="flex-1 relative h-2 bg-white/10 rounded-full overflow-hidden">
+              {/* Progress */}
               <div 
-                className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-300"
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
                 style={{ width: `${Math.min((currentMinute / totalMinutes) * 100, 100)}%` }}
               />
               {/* HT marker */}
               <div 
-                className="absolute top-1/2 -translate-y-1/2 w-0.5 h-2.5 bg-white/30"
-                style={{ left: '50%' }}
+                className="absolute top-0 bottom-0 w-0.5 bg-white/40"
+                style={{ left: `${(45 / totalMinutes) * 100}%` }}
               />
+              {/* FT marker for extra time */}
+              {allowExtraTime && (
+                <div 
+                  className="absolute top-0 bottom-0 w-0.5 bg-amber-400/50"
+                  style={{ left: `${(90 / totalMinutes) * 100}%` }}
+                />
+              )}
             </div>
-            <span className="text-[10px] font-mono text-white/60 tabular-nums w-6 text-right">
+            <span className="text-[10px] font-mono text-white/60 tabular-nums w-8">
               {totalMinutes}&apos;
             </span>
           </div>

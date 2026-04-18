@@ -17,9 +17,18 @@ interface MatchArenaStageProps {
   teamBColor: string
   isPlaying: boolean
   phase: string
+  format?: string
+  competition?: string
 }
 
-export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: MatchArenaStageProps) {
+export function MatchArenaStage({ 
+  teamAColor, 
+  teamBColor, 
+  isPlaying, 
+  phase,
+  format = "9:16",
+  competition = "League",
+}: MatchArenaStageProps) {
   const [ballA, setBallA] = useState<BallState>({ 
     x: 55, y: 42, vx: 0.8, vy: 0.3, intensity: 0.7, 
     trail: [], isAttacking: true
@@ -478,6 +487,34 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
           <span className="text-[8px] lg:text-[7px] font-bold text-red-400 uppercase tracking-wider">Penalties</span>
         </div>
       )}
+
+      {/* Format indicator - bottom left on desktop */}
+      <div className="hidden lg:flex absolute bottom-2.5 left-2.5 items-center gap-2">
+        <div className="px-2 py-1 rounded-md bg-black/50 backdrop-blur-sm border border-white/10">
+          <span className="text-[8px] font-mono text-white/50">{format}</span>
+        </div>
+        <div className="px-2 py-1 rounded-md bg-black/50 backdrop-blur-sm border border-white/10">
+          <span className="text-[8px] font-semibold text-white/50 uppercase tracking-wide">{competition}</span>
+        </div>
+      </div>
+
+      {/* Team color legend - bottom right on desktop */}
+      <div className="hidden lg:flex absolute bottom-2.5 right-2.5 items-center gap-3">
+        <div className="flex items-center gap-1.5">
+          <div 
+            className="w-3 h-3 rounded-full border"
+            style={{ backgroundColor: teamAColor, borderColor: 'rgba(255,255,255,0.3)' }}
+          />
+          <span className="text-[8px] text-white/50">Team A</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div 
+            className="w-3 h-3 rounded-full border"
+            style={{ backgroundColor: teamBColor, borderColor: 'rgba(255,255,255,0.3)' }}
+          />
+          <span className="text-[8px] text-white/50">Team B</span>
+        </div>
+      </div>
     </div>
   )
 }

@@ -249,7 +249,7 @@ export function MobileControlsContent({
           </div>
         </AccordionContent>
       </AccordionItem>
-    </Accordion>
+      </Accordion>
     </div>
   )
 }
