@@ -73,10 +73,10 @@ export function SimulationViewer({
         </div>
       </div>
 
-      {/* Main Stage Area - Takes all available space */}
-      <div className="flex-1 flex flex-col min-h-0 relative">
-        {/* Scoreboard - Integrated with stage, positioned at top */}
-        <div className="absolute top-2 sm:top-3 left-1/2 -translate-x-1/2 z-20">
+      {/* Mobile-first main content wrapper */}
+      <div className="flex-1 flex flex-col min-h-0 lg:p-0">
+        {/* Mobile: Ultra-compact scoreboard bar at the very top */}
+        <div className="lg:hidden shrink-0 flex items-center justify-center py-1.5 bg-black/40 backdrop-blur-sm border-b border-white/5">
           <MatchScoreboard
             teamA={teamA}
             teamB={teamB}
@@ -86,30 +86,67 @@ export function SimulationViewer({
           />
         </div>
 
-        {/* Arena Stage - The HERO - fills the space */}
-        <div className="flex-1 p-1.5 sm:p-2 lg:p-3 min-h-0">
-          <MatchArenaStage
-            teamAColor={teamA.color}
-            teamBColor={teamB.color}
-            isPlaying={isPlaying}
-            phase={phase}
-          />
+        {/* Stage container - maximized on mobile */}
+        <div className="flex-1 relative min-h-0">
+          {/* Desktop scoreboard - floating */}
+          <div className="hidden lg:block absolute top-3 left-1/2 -translate-x-1/2 z-20">
+            <MatchScoreboard
+              teamA={teamA}
+              teamB={teamB}
+              timer={timer}
+              phase={phase}
+              competition={competition}
+            />
+          </div>
+
+          {/* Arena Stage - THE HERO - minimal padding on mobile */}
+          <div className="h-full p-1 lg:p-3">
+            <MatchArenaStage
+              teamAColor={teamA.color}
+              teamBColor={teamB.color}
+              isPlaying={isPlaying}
+              phase={phase}
+            />
+          </div>
+
+          {/* Desktop playback controls - overlaid */}
+          <div className="hidden lg:block absolute bottom-3 left-1/2 -translate-x-1/2 z-20 w-[95%] max-w-lg">
+            <PlaybackControls
+              isPlaying={isPlaying}
+              onPlayPause={onPlayPause}
+              onRestart={onRestart}
+              onJumpToHalfTime={onJumpToHalfTime}
+              onJumpToFullTime={onJumpToFullTime}
+              currentMinute={currentMinute}
+              totalMinutes={totalMinutes}
+              phase={phase}
+              allowExtraTime={allowExtraTime}
+              allowPenalties={allowPenalties}
+            />
+          </div>
         </div>
 
-        {/* Playback Controls - Overlaid at bottom of stage */}
-        <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 z-20 w-[95%] max-w-lg">
-          <PlaybackControls
-            isPlaying={isPlaying}
-            onPlayPause={onPlayPause}
-            onRestart={onRestart}
-            onJumpToHalfTime={onJumpToHalfTime}
-            onJumpToFullTime={onJumpToFullTime}
-            currentMinute={currentMinute}
-            totalMinutes={totalMinutes}
-            phase={phase}
-            allowExtraTime={allowExtraTime}
-            allowPenalties={allowPenalties}
-          />
+        {/* Mobile timeline - directly below stage, always visible */}
+        <div className="lg:hidden shrink-0 px-3 py-2 bg-black/50 backdrop-blur-sm border-t border-white/5">
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono text-white/60 tabular-nums w-6">
+              {currentMinute}&apos;
+            </span>
+            <div className="flex-1 relative h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div 
+                className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-300"
+                style={{ width: `${Math.min((currentMinute / totalMinutes) * 100, 100)}%` }}
+              />
+              {/* HT marker */}
+              <div 
+                className="absolute top-1/2 -translate-y-1/2 w-0.5 h-2.5 bg-white/30"
+                style={{ left: '50%' }}
+              />
+            </div>
+            <span className="text-[10px] font-mono text-white/60 tabular-nums w-6 text-right">
+              {totalMinutes}&apos;
+            </span>
+          </div>
         </div>
       </div>
     </div>

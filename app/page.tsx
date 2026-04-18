@@ -135,6 +135,7 @@ export default function FootballSimulationStudio() {
 
   return (
     <div className="h-dvh flex flex-col bg-background overflow-hidden">
+      {/* Desktop-only header */}
       <div className="hidden lg:block shrink-0">
         <AppHeader
           matchLabel={`${teamA.name} vs ${teamB.name}`}
@@ -146,7 +147,9 @@ export default function FootballSimulationStudio() {
         />
       </div>
 
-      <div className="flex-1 flex min-h-0">
+      {/* Main content - flex-1 with bottom padding on mobile for dock */}
+      <div className="flex-1 flex min-h-0 pb-[60px] lg:pb-0">
+        {/* Simulation viewer - takes full space on mobile */}
         <div className="flex-1 min-w-0 flex flex-col">
           <SimulationViewer
             teamA={teamA}
@@ -199,7 +202,13 @@ export default function FootballSimulationStudio() {
         </div>
       </div>
 
-      <MobileControlsDrawer onExport={handleExport} onRender={handleRender}>
+      <MobileControlsDrawer 
+        onExport={handleExport} 
+        onRender={handleRender}
+        isPlaying={isPlaying}
+        onPlayPause={handlePlayPause}
+        onRestart={handleRestart}
+      >
         <MobileControlsContent
           teamA={teamA}
           teamB={teamB}

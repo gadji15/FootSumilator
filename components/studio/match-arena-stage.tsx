@@ -188,7 +188,7 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
 
   return (
     <div 
-      className="relative w-full h-full rounded-lg sm:rounded-xl overflow-hidden"
+      className="relative w-full h-full rounded-xl lg:rounded-2xl overflow-hidden"
       style={{
         background: `
           radial-gradient(ellipse 80% 50% at 50% 105%, oklch(0.16 0.03 250 / 0.6) 0%, transparent 50%),
@@ -343,8 +343,8 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
         <div 
           className="relative rounded-full border-[2px] flex items-center justify-center"
           style={{ 
-            width: 'clamp(32px, 5vw, 44px)',
-            height: 'clamp(32px, 5vw, 44px)',
+            width: 'clamp(36px, 8vw, 48px)',
+            height: 'clamp(36px, 8vw, 48px)',
             backgroundColor: teamAColor,
             borderColor: `rgba(255,255,255,${0.5 + ballA.intensity * 0.25})`,
             boxShadow: `
@@ -355,7 +355,7 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
             `,
           }}
         >
-          <span className="font-bold text-white text-[10px] sm:text-[11px] select-none" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+          <span className="font-bold text-white text-[11px] lg:text-xs select-none" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             A
           </span>
         </div>
@@ -413,8 +413,8 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
         <div 
           className="relative rounded-full border-[2px] flex items-center justify-center"
           style={{ 
-            width: 'clamp(28px, 4.2vw, 38px)',
-            height: 'clamp(28px, 4.2vw, 38px)',
+            width: 'clamp(32px, 7vw, 42px)',
+            height: 'clamp(32px, 7vw, 42px)',
             backgroundColor: teamBColor,
             borderColor: `rgba(255,255,255,${0.4 + ballB.intensity * 0.2})`,
             boxShadow: `
@@ -425,7 +425,7 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
             `,
           }}
         >
-          <span className="font-bold text-white text-[9px] sm:text-[10px] select-none" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+          <span className="font-bold text-white text-[10px] lg:text-[11px] select-none" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
             B
           </span>
         </div>
@@ -454,16 +454,16 @@ export function MatchArenaStage({ teamAColor, teamBColor, isPlaying, phase }: Ma
 
       {/* Live indicator */}
       {isPlaying && (
-        <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-black/50 backdrop-blur-sm border border-white/10">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-          <span className="text-[7px] font-medium text-white/70 uppercase tracking-wider">Live</span>
+        <div className="absolute top-2 left-2 lg:top-2.5 lg:left-2.5 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10">
+          <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          <span className="text-[8px] lg:text-[7px] font-semibold text-white/80 uppercase tracking-wider">Live</span>
         </div>
       )}
 
       {/* Penalty mode indicator */}
       {isPenaltyShootout && (
-        <div className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 px-1.5 py-0.5 rounded bg-red-500/20 border border-red-500/30 backdrop-blur-sm">
-          <span className="text-[7px] font-semibold text-red-400 uppercase tracking-wider">Penalties</span>
+        <div className="absolute top-2 right-2 lg:top-2.5 lg:right-2.5 px-2 py-1 rounded-lg bg-red-500/20 border border-red-500/30 backdrop-blur-sm">
+          <span className="text-[8px] lg:text-[7px] font-bold text-red-400 uppercase tracking-wider">Penalties</span>
         </div>
       )}
     </div>
