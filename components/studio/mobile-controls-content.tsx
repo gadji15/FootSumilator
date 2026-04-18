@@ -60,10 +60,12 @@ export function MobileControlsContent({
   onResolutionChange,
 }: MobileControlsContentProps) {
   return (
-    <Accordion type="multiple" defaultValue={["teams"]} className="w-full">
+    <div className="space-y-1">
+      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Settings</h3>
+      <Accordion type="multiple" defaultValue={["teams"]} className="w-full space-y-1">
       {/* Teams */}
-      <AccordionItem value="teams" className="border-border/50">
-        <AccordionTrigger className="py-3 text-sm hover:no-underline">
+      <AccordionItem value="teams" className="border-border/30 rounded-xl bg-muted/20 px-3 mb-2">
+        <AccordionTrigger className="py-3.5 text-sm hover:no-underline">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-primary" />
             <span>Teams</span>
@@ -119,8 +121,8 @@ export function MobileControlsContent({
       </AccordionItem>
 
       {/* Competition */}
-      <AccordionItem value="competition" className="border-border/50">
-        <AccordionTrigger className="py-3 text-sm hover:no-underline">
+      <AccordionItem value="competition" className="border-border/30 rounded-xl bg-muted/20 px-3 mb-2">
+        <AccordionTrigger className="py-3.5 text-sm hover:no-underline">
           <div className="flex items-center gap-2">
             <Trophy className="w-4 h-4 text-primary" />
             <span>Competition</span>
@@ -154,8 +156,8 @@ export function MobileControlsContent({
       </AccordionItem>
 
       {/* Match Rules */}
-      <AccordionItem value="rules" className="border-border/50">
-        <AccordionTrigger className="py-3 text-sm hover:no-underline">
+      <AccordionItem value="rules" className="border-border/30 rounded-xl bg-muted/20 px-3 mb-2">
+        <AccordionTrigger className="py-3.5 text-sm hover:no-underline">
           <div className="flex items-center gap-2">
             <Settings className="w-4 h-4 text-primary" />
             <span>Match Rules</span>
@@ -208,8 +210,8 @@ export function MobileControlsContent({
       </AccordionItem>
 
       {/* Export */}
-      <AccordionItem value="export" className="border-border/50">
-        <AccordionTrigger className="py-3 text-sm hover:no-underline">
+      <AccordionItem value="export" className="border-border/30 rounded-xl bg-muted/20 px-3 mb-2">
+        <AccordionTrigger className="py-3.5 text-sm hover:no-underline">
           <div className="flex items-center gap-2">
             <Film className="w-4 h-4 text-primary" />
             <span>Export Settings</span>
@@ -247,6 +249,7 @@ export function MobileControlsContent({
           </div>
         </AccordionContent>
       </AccordionItem>
-    </Accordion>
+      </Accordion>
+    </div>
   )
 }

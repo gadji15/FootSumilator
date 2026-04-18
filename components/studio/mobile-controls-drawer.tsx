@@ -2,62 +2,94 @@
 
 import { Button } from "@/components/ui/button"
 import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle } from "@/components/ui/drawer"
-import { Settings, Download, Film } from "lucide-react"
+import { Settings, Download, Film, Play, Pause, RotateCcw } from "lucide-react"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { DialogDescription } from "@radix-ui/react-dialog"
 
 interface MobileControlsDrawerProps {
   children: React.ReactNode
   onExport?: () => void
   onRender?: () => void
+  isPlaying?: boolean
+  onPlayPause?: () => void
+  onRestart?: () => void
 }
 
-export function MobileControlsDrawer({ children, onExport, onRender }: MobileControlsDrawerProps) {
+export function MobileControlsDrawer({ 
+  children, 
+  onExport, 
+  onRender,
+  isPlaying,
+  onPlayPause,
+  onRestart,
+}: MobileControlsDrawerProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-      {/* Minimal floating action bar */}
-      <div className="flex items-center justify-between px-2 py-1.5 pb-safe bg-black/80 backdrop-blur-xl border-t border-white/[0.06]">
-        {/* Settings trigger */}
+      {/* Mobile dock - clean control bar */}
+      <div className="flex items-center justify-between px-3 py-2 pb-safe bg-black/90 backdrop-blur-2xl border-t border-white/[0.08]">
+        {/* Left: Settings drawer trigger */}
         <Drawer>
           <DrawerTrigger asChild>
             <Button 
               variant="ghost" 
-              size="sm" 
-              className="h-8 px-2.5 gap-1.5 text-[11px] text-white/60 hover:text-white hover:bg-white/10"
+              size="icon"
+              className="h-10 w-10 text-white/60 hover:text-white hover:bg-white/10 rounded-xl"
             >
-              <Settings className="w-3.5 h-3.5" />
-              <span>Settings</span>
+              <Settings className="w-5 h-5" />
             </Button>
           </DrawerTrigger>
-          <DrawerContent className="max-h-[80vh] bg-card/95 backdrop-blur-2xl border-t border-border/30">
+          <DrawerContent className="max-h-[85vh] bg-card/98 backdrop-blur-2xl border-t border-border/40 rounded-t-2xl">
             <VisuallyHidden>
               <DrawerTitle>Simulation Settings</DrawerTitle>
+              <DialogDescription>Configure teams, competition, match rules and export settings</DialogDescription>
             </VisuallyHidden>
-            <div className="w-10 h-1 rounded-full bg-white/15 mx-auto mt-2 mb-3" />
-            <div className="overflow-y-auto overscroll-contain px-4 pb-8">
+            <div className="w-12 h-1 rounded-full bg-white/20 mx-auto mt-3 mb-4" />
+            <div className="overflow-y-auto overscroll-contain px-5 pb-10">
               {children}
             </div>
           </DrawerContent>
         </Drawer>
 
-        {/* Quick actions */}
-        <div className="flex items-center gap-1">
+        {/* Center: Primary playback controls */}
+        <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
-            size="sm" 
-            className="h-8 w-8 p-0 text-white/50 hover:text-white hover:bg-white/10"
-            onClick={onExport}
+            size="icon"
+            className="h-9 w-9 text-white/50 hover:text-white hover:bg-white/10 rounded-full"
+            onClick={onRestart}
           >
-            <Download className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" />
           </Button>
           <Button 
-            size="sm" 
-            className="h-8 px-3 gap-1.5 bg-primary text-primary-foreground text-[11px] font-medium shadow-lg shadow-primary/25"
-            onClick={onRender}
+            size="icon"
+            className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 shadow-lg shadow-primary/40"
+            onClick={onPlayPause}
           >
-            <Film className="w-3.5 h-3.5" />
-            <span>Render</span>
+            {isPlaying ? (
+              <Pause className="w-5 h-5" />
+            ) : (
+              <Play className="w-5 h-5 ml-0.5" />
+            )}
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="h-9 w-9 text-white/50 hover:text-white hover:bg-white/10 rounded-full"
+            onClick={onExport}
+          >
+            <Download className="w-4 h-4" />
           </Button>
         </div>
+
+        {/* Right: Render action */}
+        <Button 
+          size="sm" 
+          className="h-10 px-4 gap-2 bg-white/10 hover:bg-white/15 text-white text-xs font-medium rounded-xl border border-white/10"
+          onClick={onRender}
+        >
+          <Film className="w-4 h-4" />
+          <span>Render</span>
+        </Button>
       </div>
     </div>
   )

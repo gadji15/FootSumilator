@@ -7,11 +7,11 @@ interface PlaybackControlsProps {
   isPlaying: boolean
   onPlayPause: () => void
   onRestart: () => void
-  onJumpToHalfTime: () => void
+  onJumpToHalfTime?: () => void
   onJumpToFullTime: () => void
   currentMinute: number
   totalMinutes: number
-  phase: string
+  phase?: string
   allowExtraTime: boolean
   allowPenalties: boolean
 }
