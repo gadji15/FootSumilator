@@ -19,6 +19,7 @@ interface MatchArenaStageProps {
   phase: string
   format?: string
   competition?: string
+  winnerBias?: "teamA" | "teamB" | "none"
 }
 
 export function MatchArenaStage({ 
@@ -28,13 +29,14 @@ export function MatchArenaStage({
   phase,
   format = "9:16",
   competition = "League",
+  winnerBias = "none",
 }: MatchArenaStageProps) {
   const [ballA, setBallA] = useState<BallState>({ 
-    x: 55, y: 42, vx: 0.8, vy: 0.3, intensity: 0.7, 
+    x: 40, y: 42, vx: 0.8, vy: 0.3, intensity: 0.7, 
     trail: [], isAttacking: true
   })
   const [ballB, setBallB] = useState<BallState>({ 
-    x: 48, y: 58, vx: 0.9, vy: -0.2, intensity: 0.65, 
+    x: 35, y: 58, vx: 0.9, vy: -0.2, intensity: 0.65, 
     trail: [], isAttacking: false
   })
   const [conflictIntensity, setConflictIntensity] = useState(0)
@@ -43,6 +45,11 @@ export function MatchArenaStage({
   const lastTimeRef = useRef<number>(0)
   const attackerRef = useRef<'A' | 'B'>('A')
   const switchTimerRef = useRef(0)
+  const winnerBiasRef = useRef(winnerBias)
+
+  useEffect(() => {
+    winnerBiasRef.current = winnerBias
+  }, [winnerBias])
 
   const updateBall = useCallback((
     prev: BallState, 
@@ -62,14 +69,20 @@ export function MatchArenaStage({
     const dy = other.y - y
     const distToOpponent = Math.sqrt(dx * dx + dy * dy)
 
-    // Goal target (right side, center)
-    const goalX = 96
+    // Goal target (right side, center) - single goal arena
+    const goalX = 92
     const goalY = 50
+
+    // Apply winner bias - affects aggression and goal-seeking
+    const bias = winnerBiasRef.current
+    const isFavored = (isTeamA && bias === "teamA") || (!isTeamA && bias === "teamB")
+    const isUnfavored = (isTeamA && bias === "teamB") || (!isTeamA && bias === "teamA")
+    const biasMultiplier = isFavored ? 1.3 : isUnfavored ? 0.75 : 1
 
     // CONFLICT PHYSICS: When balls are close, they jostle and compete
     if (distToOpponent < 25) {
       // Repulsion from opponent
-      const repelStrength = (25 - distToOpponent) * 0.008
+      const repelStrength = (25 - distToOpponent) * 0.008 * biasMultiplier
       vx -= (dx / distToOpponent) * repelStrength * dt
       vy -= (dy / distToOpponent) * repelStrength * dt
       
@@ -79,14 +92,14 @@ export function MatchArenaStage({
       // Try to get ahead of opponent toward goal
       if (isAttacking) {
         const angleToGoal = Math.atan2(goalY - y, goalX - x)
-        vx += Math.cos(angleToGoal) * 0.06 * dt
-        vy += Math.sin(angleToGoal) * 0.04 * dt
+        vx += Math.cos(angleToGoal) * 0.06 * biasMultiplier * dt
+        vy += Math.sin(angleToGoal) * 0.04 * biasMultiplier * dt
       }
     }
 
-    // Goal-seeking behavior
+    // Goal-seeking behavior - stronger for favored team
     const distToGoal = Math.sqrt((goalX - x) ** 2 + (goalY - y) ** 2)
-    const goalAttraction = isAttacking ? 0.035 : 0.018
+    const goalAttraction = (isAttacking ? 0.04 : 0.02) * biasMultiplier
     vx += ((goalX - x) / distToGoal) * goalAttraction * dt
     vy += ((goalY - y) / distToGoal) * goalAttraction * 0.4 * dt
 
@@ -102,15 +115,16 @@ export function MatchArenaStage({
     vx += (Math.random() - 0.48) * drift * dt
     vy += (Math.random() - 0.5) * drift * dt
 
-    // Boundary handling with energy
-    const margin = 6
-    if (x < margin) { x = margin; vx = Math.abs(vx) * 0.85; intensity += 0.05 }
-    if (x > 94) { x = 94; vx = -Math.abs(vx) * 0.85; intensity += 0.05 }
-    if (y < margin + 4) { y = margin + 4; vy = Math.abs(vy) * 0.85; intensity += 0.04 }
-    if (y > 94 - margin) { y = 94 - margin; vy = -Math.abs(vy) * 0.85; intensity += 0.04 }
+    // Boundary handling - single goal arena layout (left side to right goal)
+    const marginX = 6
+    const marginY = 8
+    if (x < marginX) { x = marginX; vx = Math.abs(vx) * 0.85; intensity += 0.05 }
+    if (x > 90) { x = 90; vx = -Math.abs(vx) * 0.85; intensity += 0.05 }
+    if (y < marginY) { y = marginY; vy = Math.abs(vy) * 0.85; intensity += 0.04 }
+    if (y > 100 - marginY) { y = 100 - marginY; vy = -Math.abs(vy) * 0.85; intensity += 0.04 }
 
-    // Speed limits - attacker slightly faster
-    const maxSpeed = isAttacking ? 2.2 : 1.9
+    // Speed limits - attacker slightly faster, favored team gets boost
+    const maxSpeed = (isAttacking ? 2.2 : 1.9) * (isFavored ? 1.1 : 1)
     const minSpeed = 0.4
     const speed = Math.sqrt(vx * vx + vy * vy)
     if (speed > maxSpeed) {
@@ -127,8 +141,8 @@ export function MatchArenaStage({
     vx *= 0.992
     vy *= 0.992
 
-    // Intensity decay
-    if (x > 70) {
+    // Intensity decay - higher in the attack zone (right side)
+    if (x > 65) {
       intensity = Math.min(1, intensity + 0.02 * dt)
     } else {
       intensity = Math.max(0.5, intensity - 0.005 * dt)
@@ -171,10 +185,19 @@ export function MatchArenaStage({
           return { ...newBall, isAttacking: attackerRef.current === 'B' }
         })
         
-        // Periodically switch attacker for drama
+        // Periodically switch attacker for drama - biased team attacks more
         switchTimerRef.current += deltaMs
-        if (switchTimerRef.current > 4000 + Math.random() * 3000) {
-          attackerRef.current = attackerRef.current === 'A' ? 'B' : 'A'
+        const bias = winnerBiasRef.current
+        const switchThreshold = bias === "teamA" ? 5000 : bias === "teamB" ? 3500 : 4000
+        if (switchTimerRef.current > switchThreshold + Math.random() * 2500) {
+          // Biased team gets more attack time
+          if (bias === "teamA") {
+            attackerRef.current = Math.random() > 0.35 ? 'A' : 'B'
+          } else if (bias === "teamB") {
+            attackerRef.current = Math.random() > 0.35 ? 'B' : 'A'
+          } else {
+            attackerRef.current = attackerRef.current === 'A' ? 'B' : 'A'
+          }
           switchTimerRef.current = 0
         }
         
@@ -197,11 +220,11 @@ export function MatchArenaStage({
     const conflict = Math.max(0, 1 - dist / 25)
     setConflictIntensity(conflict)
 
-    // Goal threat when either ball is near goal zone
-    const aInZone = ballA.x > 75 && ballA.y > 30 && ballA.y < 70
-    const bInZone = ballB.x > 75 && ballB.y > 30 && ballB.y < 70
-    const threatA = aInZone ? (ballA.x - 75) / 20 : 0
-    const threatB = bInZone ? (ballB.x - 75) / 20 : 0
+    // Goal threat when either ball is near goal zone (right side)
+    const aInZone = ballA.x > 70 && ballA.y > 30 && ballA.y < 70
+    const bInZone = ballB.x > 70 && ballB.y > 30 && ballB.y < 70
+    const threatA = aInZone ? (ballA.x - 70) / 22 : 0
+    const threatB = bInZone ? (ballB.x - 70) / 22 : 0
     setGoalThreat(Math.min(1, Math.max(threatA, threatB)))
   }, [ballA.x, ballA.y, ballB.x, ballB.y])
 
@@ -212,36 +235,118 @@ export function MatchArenaStage({
       className="relative w-full h-full rounded-xl lg:rounded-2xl overflow-hidden"
       style={{
         background: `
-          radial-gradient(ellipse 80% 50% at 50% 105%, oklch(0.16 0.03 250 / 0.6) 0%, transparent 50%),
-          radial-gradient(ellipse 35% 40% at 95% 50%, oklch(0.75 0.12 85 / ${0.03 + goalThreat * 0.08}) 0%, transparent 50%),
-          radial-gradient(ellipse 50% 50% at ${(ballA.x + ballB.x) / 2}% ${(ballA.y + ballB.y) / 2}%, oklch(0.18 0.04 280 / ${conflictIntensity * 0.08}) 0%, transparent 40%),
-          linear-gradient(178deg, oklch(0.10 0.012 250) 0%, oklch(0.125 0.015 250) 50%, oklch(0.105 0.01 250) 100%)
+          radial-gradient(ellipse 80% 50% at 50% 105%, oklch(0.08 0.02 140 / 0.4) 0%, transparent 50%),
+          radial-gradient(ellipse 35% 40% at 95% 50%, oklch(0.75 0.12 85 / ${0.03 + goalThreat * 0.1}) 0%, transparent 50%),
+          radial-gradient(ellipse 50% 50% at ${(ballA.x + ballB.x) / 2}% ${(ballA.y + ballB.y) / 2}%, oklch(0.18 0.04 280 / ${conflictIntensity * 0.1}) 0%, transparent 40%),
+          linear-gradient(178deg, oklch(0.12 0.025 145) 0%, oklch(0.15 0.035 140) 50%, oklch(0.11 0.02 145) 100%)
         `
       }}
     >
-      {/* Pitch markings - standard football layout */}
+      {/* Premium grass texture with mowing stripes */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              90deg,
+              oklch(0.18 0.04 140 / 0.15) 0px,
+              oklch(0.18 0.04 140 / 0.15) 8%,
+              oklch(0.14 0.035 140 / 0.12) 8%,
+              oklch(0.14 0.035 140 / 0.12) 16%
+            )
+          `,
+        }}
+      />
+      
+      {/* Secondary diagonal grass texture */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-30"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(
+              45deg,
+              transparent 0px,
+              transparent 2px,
+              oklch(0.20 0.04 145 / 0.08) 2px,
+              oklch(0.20 0.04 145 / 0.08) 3px
+            )
+          `,
+        }}
+      />
+      
+      {/* Soft vignette for cinematic feel */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse 70% 60% at 50% 50%, transparent 30%, oklch(0.08 0.02 250 / 0.5) 100%)`
+        }}
+      />
+      
+      {/* Stadium lights glow - top corners */}
+      <div 
+        className="absolute -top-20 left-1/4 w-40 h-40 rounded-full blur-[80px] pointer-events-none"
+        style={{ background: 'oklch(0.95 0 0 / 0.04)' }}
+      />
+      <div 
+        className="absolute -top-20 right-1/4 w-40 h-40 rounded-full blur-[80px] pointer-events-none"
+        style={{ background: 'oklch(0.95 0 0 / 0.04)' }}
+      />
+
+      {/* Single-goal arena pitch markings */}
       <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
-        {/* Pitch outline */}
-        <rect x="4" y="8" width="92" height="84" fill="none" stroke="white" strokeOpacity="0.06" strokeWidth="0.2" rx="0.5"/>
+        {/* Pitch outline - single attacking side */}
+        <rect x="4" y="6" width="92" height="88" fill="none" stroke="white" strokeOpacity="0.08" strokeWidth="0.25" rx="0.5"/>
         
-        {/* Center line */}
-        <line x1="50" y1="8" x2="50" y2="92" stroke="white" strokeOpacity="0.07" strokeWidth="0.15"/>
+        {/* Attack zone arc - marks the critical zone */}
+        <path 
+          d="M 65 6 Q 85 50 65 94" 
+          fill="none" 
+          stroke="white" 
+          strokeOpacity="0.05" 
+          strokeWidth="0.15"
+          strokeDasharray="2 2"
+        />
         
-        {/* Center circle */}
-        <circle cx="50" cy="50" r="12" fill="none" stroke="white" strokeOpacity="0.06" strokeWidth="0.15"/>
-        <circle cx="50" cy="50" r="0.8" fill="white" fillOpacity="0.08"/>
+        {/* Penalty area - right side */}
+        <rect x="78" y="25" width="18" height="50" fill="none" stroke="white" strokeOpacity="0.1" strokeWidth="0.2"/>
         
-        {/* Goal area boxes */}
-        <rect x="4" y="35" width="8" height="30" fill="none" stroke="white" strokeOpacity="0.05" strokeWidth="0.12"/>
-        <rect x="88" y="35" width="8" height="30" fill="none" stroke="white" strokeOpacity="0.05" strokeWidth="0.12"/>
+        {/* Goal area box - right side */}
+        <rect x="88" y="35" width="8" height="30" fill="none" stroke="white" strokeOpacity="0.12" strokeWidth="0.18"/>
         
-        {/* Penalty areas */}
-        <rect x="4" y="25" width="14" height="50" fill="none" stroke="white" strokeOpacity="0.04" strokeWidth="0.1"/>
-        <rect x="82" y="25" width="14" height="50" fill="none" stroke="white" strokeOpacity="0.04" strokeWidth="0.1"/>
+        {/* Penalty spot */}
+        <circle cx="84" cy="50" r="0.6" fill="white" fillOpacity="0.1"/>
         
-        {/* Penalty spots */}
-        <circle cx="13" cy="50" r="0.5" fill="white" fillOpacity="0.06"/>
-        <circle cx="87" cy="50" r="0.5" fill="white" fillOpacity="0.06"/>
+        {/* Penalty arc */}
+        <path 
+          d="M 78 38 Q 81 50 78 62" 
+          fill="none" 
+          stroke="white" 
+          strokeOpacity="0.06" 
+          strokeWidth="0.15"
+        />
+        
+        {/* Corner arcs - attacking side (right) */}
+        <path 
+          d="M 96 6 Q 96 10 92 10" 
+          fill="none" 
+          stroke="white" 
+          strokeOpacity="0.12" 
+          strokeWidth="0.2"
+        />
+        <path 
+          d="M 96 94 Q 96 90 92 90" 
+          fill="none" 
+          stroke="white" 
+          strokeOpacity="0.12" 
+          strokeWidth="0.2"
+        />
+        
+        {/* Corner flag indicators */}
+        <circle cx="96" cy="6" r="1" fill="white" fillOpacity="0.06"/>
+        <circle cx="96" cy="94" r="1" fill="white" fillOpacity="0.06"/>
+        
+        {/* Midfield reference line */}
+        <line x1="35" y1="6" x2="35" y2="94" stroke="white" strokeOpacity="0.04" strokeWidth="0.12" strokeDasharray="2 3"/>
       </svg>
 
       {/* Conflict tension zone - appears when balls are close */}
@@ -252,36 +357,85 @@ export function MatchArenaStage({
           top: `${(ballA.y + ballB.y) / 2 - 18}%`,
           width: '36%',
           height: '36%',
-          background: `radial-gradient(circle, oklch(0.6 0.2 330 / ${conflictIntensity * 0.2}) 0%, transparent 60%)`,
+          background: `radial-gradient(circle, oklch(0.6 0.18 350 / ${conflictIntensity * 0.25}) 0%, transparent 60%)`,
           opacity: conflictIntensity > 0.3 ? 1 : 0,
         }}
       />
+      
+      {/* Duel pressure zone - highlights the area of conflict */}
+      <div 
+        className="absolute rounded-full blur-[100px] pointer-events-none transition-all duration-500"
+        style={{
+          left: `${Math.max(45, Math.min(75, (ballA.x + ballB.x) / 2)) - 15}%`,
+          top: `${(ballA.y + ballB.y) / 2 - 20}%`,
+          width: '30%',
+          height: '40%',
+          background: `radial-gradient(circle, oklch(0.22 0.05 280 / 0.3) 0%, transparent 70%)`,
+          opacity: 0.6,
+        }}
+      />
 
-      {/* Goal - compact and proportional */}
-      <div className="absolute right-[2%] top-1/2 -translate-y-1/2 w-[5%] h-[24%]">
-        {/* Goal glow */}
+      {/* Goal - well-proportioned, compact, premium */}
+      <div className="absolute right-[1.5%] top-1/2 -translate-y-1/2 w-[6%] h-[28%]">
+        {/* Goal outer glow - spreads when threat is high */}
         <div 
-          className="absolute -inset-[100%] transition-opacity duration-400"
+          className="absolute transition-all duration-500"
           style={{
-            background: `radial-gradient(ellipse 70% 120% at 100% 50%, oklch(0.78 0.14 85 / ${0.06 + goalThreat * 0.2}) 0%, transparent 55%)`,
+            inset: `-${60 + goalThreat * 40}%`,
+            background: `radial-gradient(ellipse 60% 100% at 100% 50%, oklch(0.80 0.15 85 / ${0.08 + goalThreat * 0.2}) 0%, transparent 60%)`,
           }}
         />
-        {/* Goal frame */}
+        
+        {/* Goal inner glow */}
         <div 
-          className="absolute right-0 top-[5%] bottom-[5%] w-[60%] border-2 border-r-0 rounded-l-sm transition-all duration-300"
+          className="absolute -inset-[30%] transition-opacity duration-300"
           style={{
-            borderColor: `oklch(0.75 0.12 85 / ${0.4 + goalThreat * 0.4})`,
-            background: `linear-gradient(90deg, oklch(0.75 0.1 85 / ${0.02 + goalThreat * 0.05}), oklch(0.8 0.14 85 / ${0.06 + goalThreat * 0.08}))`,
-            boxShadow: goalThreat > 0.3 
-              ? `0 0 ${20 + goalThreat * 25}px oklch(0.78 0.14 85 / ${goalThreat * 0.35})`
-              : 'none',
+            background: `radial-gradient(ellipse 50% 80% at 100% 50%, oklch(0.85 0.12 85 / ${0.05 + goalThreat * 0.15}) 0%, transparent 50%)`,
           }}
         />
-        {/* Goal net suggestion */}
+        
+        {/* Goal posts frame */}
         <div 
-          className="absolute right-[60%] top-[10%] bottom-[10%] w-[35%]"
+          className="absolute right-0 top-0 bottom-0 w-[70%] rounded-l-sm transition-all duration-300 overflow-hidden"
           style={{
-            background: `repeating-linear-gradient(90deg, transparent, transparent 3px, oklch(0.7 0.08 85 / 0.08) 3px, oklch(0.7 0.08 85 / 0.08) 4px)`,
+            border: `2.5px solid oklch(0.78 0.1 85 / ${0.5 + goalThreat * 0.4})`,
+            borderRight: 'none',
+            background: `linear-gradient(90deg, 
+              oklch(0.12 0.02 250 / 0.8) 0%, 
+              oklch(0.18 0.03 85 / ${0.1 + goalThreat * 0.15}) 100%
+            )`,
+            boxShadow: goalThreat > 0.2 
+              ? `0 0 ${15 + goalThreat * 30}px oklch(0.80 0.14 85 / ${0.2 + goalThreat * 0.35}),
+                 inset 0 0 ${10 + goalThreat * 15}px oklch(0.75 0.12 85 / ${goalThreat * 0.2})`
+              : `0 0 10px oklch(0.75 0.1 85 / 0.15)`,
+          }}
+        >
+          {/* Net pattern */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(90deg, oklch(0.75 0.08 85 / 0.06) 1px, transparent 1px),
+                linear-gradient(0deg, oklch(0.75 0.08 85 / 0.06) 1px, transparent 1px)
+              `,
+              backgroundSize: '6px 6px',
+            }}
+          />
+        </div>
+        
+        {/* Goal crossbar highlight */}
+        <div 
+          className="absolute right-0 -top-[3px] w-[75%] h-[3px] rounded-l-sm"
+          style={{
+            background: `linear-gradient(90deg, oklch(0.85 0.08 85 / 0.6), oklch(0.95 0.05 85 / 0.4))`,
+          }}
+        />
+        
+        {/* Goal post right edge highlight */}
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-[3px]"
+          style={{
+            background: `linear-gradient(180deg, oklch(0.90 0.06 85 / 0.5), oklch(0.80 0.08 85 / 0.4), oklch(0.90 0.06 85 / 0.5))`,
           }}
         />
       </div>

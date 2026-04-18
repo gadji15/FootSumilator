@@ -35,6 +35,7 @@ export default function FootballSimulationStudio() {
 
   const [competition, setCompetition] = useState("ucl")
   const [simulationMode, setSimulationMode] = useState("free")
+  const [winnerBias, setWinnerBias] = useState<"teamA" | "teamB" | "none">("teamA")
   const [allowExtraTime, setAllowExtraTime] = useState(false)
   const [allowPenalties, setAllowPenalties] = useState(false)
   const [tempo, setTempo] = useState(75)
@@ -167,6 +168,7 @@ export default function FootballSimulationStudio() {
             onRestart={handleRestart}
             onJumpToHalfTime={handleJumpToHalfTime}
             onJumpToFullTime={handleJumpToFullTime}
+            winnerBias={winnerBias}
           />
         </div>
 
@@ -180,6 +182,8 @@ export default function FootballSimulationStudio() {
             onCompetitionChange={setCompetition}
             simulationMode={simulationMode}
             onSimulationModeChange={setSimulationMode}
+            winnerBias={winnerBias}
+            onWinnerBiasChange={setWinnerBias}
             allowExtraTime={allowExtraTime}
             onAllowExtraTimeChange={setAllowExtraTime}
             allowPenalties={allowPenalties}
