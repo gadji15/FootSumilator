@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Drawer, DrawerContent, DrawerTrigger, DrawerTitle } from "@/components/ui/drawer"
 import { Settings, Download, Film, Play, Pause, RotateCcw } from "lucide-react"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { DialogDescription } from "@radix-ui/react-dialog"
 
 interface MobileControlsDrawerProps {
   children: React.ReactNode
@@ -40,6 +41,7 @@ export function MobileControlsDrawer({
           <DrawerContent className="max-h-[85vh] bg-card/98 backdrop-blur-2xl border-t border-border/40 rounded-t-2xl">
             <VisuallyHidden>
               <DrawerTitle>Simulation Settings</DrawerTitle>
+              <DialogDescription>Configure teams, competition, match rules and export settings</DialogDescription>
             </VisuallyHidden>
             <div className="w-12 h-1 rounded-full bg-white/20 mx-auto mt-3 mb-4" />
             <div className="overflow-y-auto overscroll-contain px-5 pb-10">
