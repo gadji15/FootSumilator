@@ -9,17 +9,18 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { 
-  Users, 
-  Trophy, 
-  Settings, 
-  Activity, 
-  Play, 
-  Pause, 
-  RotateCcw, 
-  Download, 
+import {
+  Users,
+  Trophy,
+  Settings,
+  Activity,
+  Play,
+  Pause,
+  RotateCcw,
+  Download,
   Film,
-  Upload
+  Upload,
+  TrendingUp
 } from "lucide-react"
 
 interface Team {
@@ -38,6 +39,8 @@ interface ControlSidebarProps {
   onCompetitionChange: (comp: string) => void
   simulationMode: string
   onSimulationModeChange: (mode: string) => void
+  winnerBias: "teamA" | "teamB" | "none"
+  onWinnerBiasChange: (bias: "teamA" | "teamB" | "none") => void
   allowExtraTime: boolean
   onAllowExtraTimeChange: (allow: boolean) => void
   allowPenalties: boolean
@@ -76,6 +79,8 @@ export function ControlSidebar({
   onCompetitionChange,
   simulationMode,
   onSimulationModeChange,
+  winnerBias,
+  onWinnerBiasChange,
   allowExtraTime,
   onAllowExtraTimeChange,
   allowPenalties,
@@ -246,6 +251,39 @@ export function ControlSidebar({
 
           <Separator className="bg-border/30" />
 
+          {/* Winner Bias */}
+          <section>
+            <SectionHeader icon={TrendingUp} title="Predicted Winner" />
+            <div className="grid grid-cols-3 gap-1">
+              {(["teamA", "none", "teamB"] as const).map((bias) => {
+                const label = bias === "teamA" ? teamA.shortName : bias === "teamB" ? teamB.shortName : "None"
+                const color = bias === "teamA" ? teamA.color : bias === "teamB" ? teamB.color : null
+                const isActive = winnerBias === bias
+                return (
+                  <button
+                    key={bias}
+                    onClick={() => onWinnerBiasChange(bias)}
+                    className={`h-7 rounded text-[9px] font-semibold transition-all border ${
+                      isActive
+                        ? "text-black border-transparent"
+                        : "bg-muted/30 text-muted-foreground border-border/30 hover:bg-muted/50"
+                    }`}
+                    style={isActive && color ? { backgroundColor: color, borderColor: color } : undefined}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+            {winnerBias !== "none" && (
+              <p className="text-[8px] text-muted-foreground mt-1 text-center">
+                {winnerBias === "teamA" ? teamA.name : teamB.name} has attacking advantage
+              </p>
+            )}
+          </section>
+
+          <Separator className="bg-border/30" />
+
           {/* Match State */}
           <section>
             <SectionHeader icon={Activity} title="Match State" />
@@ -264,6 +302,27 @@ export function ControlSidebar({
               <p className="text-[10px] font-medium text-foreground">
                 {teamA.shortName} {teamA.score} – {teamB.score} {teamB.shortName}
               </p>
+            </div>
+            {/* Active event summary */}
+            <div className="mt-1.5 p-1.5 rounded bg-muted/20 border border-border/20">
+              <p className="text-[8px] text-muted-foreground mb-1">Status</p>
+              <div className="flex items-center gap-1.5">
+                <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${isPlaying ? "bg-primary animate-pulse" : "bg-muted-foreground"}`} />
+                <p className="text-[9px] text-foreground">
+                  {phase === "Full Time" || phase === "Penalties"
+                    ? `${phase} — ${teamA.shortName} ${teamA.score}–${teamB.score} ${teamB.shortName}`
+                    : phase === "Half Time"
+                    ? "Break — resuming soon"
+                    : isPlaying
+                    ? `${phase} · min ${currentMinute}`
+                    : "Paused"}
+                </p>
+              </div>
+              {winnerBias !== "none" && (
+                <p className="text-[8px] text-primary mt-0.5">
+                  Bias: {winnerBias === "teamA" ? teamA.shortName : teamB.shortName} favoured
+                </p>
+              )}
             </div>
           </section>
 

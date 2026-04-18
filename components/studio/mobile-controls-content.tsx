@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Upload, Users, Trophy, Settings, Film } from "lucide-react"
+import { Upload, Users, Trophy, Settings, Film, TrendingUp } from "lucide-react"
 
 interface Team {
   name: string
@@ -27,6 +27,8 @@ interface MobileControlsContentProps {
   onCompetitionChange: (comp: string) => void
   simulationMode: string
   onSimulationModeChange: (mode: string) => void
+  winnerBias: "teamA" | "teamB" | "none"
+  onWinnerBiasChange: (bias: "teamA" | "teamB" | "none") => void
   allowExtraTime: boolean
   onAllowExtraTimeChange: (allow: boolean) => void
   allowPenalties: boolean
@@ -48,6 +50,8 @@ export function MobileControlsContent({
   onCompetitionChange,
   simulationMode,
   onSimulationModeChange,
+  winnerBias,
+  onWinnerBiasChange,
   allowExtraTime,
   onAllowExtraTimeChange,
   allowPenalties,
@@ -117,6 +121,44 @@ export function MobileControlsContent({
               </Button>
             </div>
           </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      {/* Winner Bias */}
+      <AccordionItem value="bias" className="border-border/30 rounded-xl bg-muted/20 px-3 mb-2">
+        <AccordionTrigger className="py-3.5 text-sm hover:no-underline">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <span>Predicted Winner</span>
+          </div>
+        </AccordionTrigger>
+        <AccordionContent className="pb-4">
+          <div className="grid grid-cols-3 gap-2">
+            {(["teamA", "none", "teamB"] as const).map((bias) => {
+              const label = bias === "teamA" ? teamA.shortName : bias === "teamB" ? teamB.shortName : "None"
+              const color = bias === "teamA" ? teamA.color : bias === "teamB" ? teamB.color : null
+              const isActive = winnerBias === bias
+              return (
+                <button
+                  key={bias}
+                  onClick={() => onWinnerBiasChange(bias)}
+                  className={`h-10 rounded-lg text-sm font-semibold transition-all border ${
+                    isActive
+                      ? "text-black border-transparent"
+                      : "bg-muted/30 text-muted-foreground border-border/30 hover:bg-muted/50"
+                  }`}
+                  style={isActive && color ? { backgroundColor: color, borderColor: color } : undefined}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          {winnerBias !== "none" && (
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              {winnerBias === "teamA" ? teamA.name : teamB.name} has the attacking advantage
+            </p>
+          )}
         </AccordionContent>
       </AccordionItem>
 

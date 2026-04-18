@@ -22,6 +22,7 @@ interface SimulationViewerProps {
   competition: string
   format: string
   isPlaying: boolean
+  winnerBias?: "teamA" | "teamB" | "none"
   allowExtraTime: boolean
   allowPenalties: boolean
   onPlayPause: () => void
@@ -40,6 +41,7 @@ export function SimulationViewer({
   competition,
   format,
   isPlaying,
+  winnerBias,
   allowExtraTime,
   allowPenalties,
   onPlayPause,
@@ -111,6 +113,7 @@ export function SimulationViewer({
               phase={phase}
               format={format}
               competition={competition}
+              winnerBias={winnerBias}
             />
           </div>
 

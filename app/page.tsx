@@ -35,6 +35,7 @@ export default function FootballSimulationStudio() {
 
   const [competition, setCompetition] = useState("ucl")
   const [simulationMode, setSimulationMode] = useState("free")
+  const [winnerBias, setWinnerBias] = useState<"teamA" | "teamB" | "none">("none")
   const [allowExtraTime, setAllowExtraTime] = useState(false)
   const [allowPenalties, setAllowPenalties] = useState(false)
   const [tempo, setTempo] = useState(75)
@@ -161,6 +162,7 @@ export default function FootballSimulationStudio() {
             competition={getCompetitionLabel()}
             format={outputFormat}
             isPlaying={isPlaying}
+            winnerBias={winnerBias}
             allowExtraTime={allowExtraTime}
             allowPenalties={allowPenalties}
             onPlayPause={handlePlayPause}
@@ -180,6 +182,8 @@ export default function FootballSimulationStudio() {
             onCompetitionChange={setCompetition}
             simulationMode={simulationMode}
             onSimulationModeChange={setSimulationMode}
+            winnerBias={winnerBias}
+            onWinnerBiasChange={setWinnerBias}
             allowExtraTime={allowExtraTime}
             onAllowExtraTimeChange={setAllowExtraTime}
             allowPenalties={allowPenalties}
@@ -218,6 +222,8 @@ export default function FootballSimulationStudio() {
           onCompetitionChange={setCompetition}
           simulationMode={simulationMode}
           onSimulationModeChange={setSimulationMode}
+          winnerBias={winnerBias}
+          onWinnerBiasChange={setWinnerBias}
           allowExtraTime={allowExtraTime}
           onAllowExtraTimeChange={setAllowExtraTime}
           allowPenalties={allowPenalties}

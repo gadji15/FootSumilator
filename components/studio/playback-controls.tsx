@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Play, Pause, RotateCcw, SkipForward } from "lucide-react"
+import { Play, Pause, RotateCcw, SkipForward, SkipBack } from "lucide-react"
 
 interface PlaybackControlsProps {
   isPlaying: boolean
@@ -20,6 +20,7 @@ export function PlaybackControls({
   isPlaying,
   onPlayPause,
   onRestart,
+  onJumpToHalfTime,
   onJumpToFullTime,
   currentMinute,
   totalMinutes,
@@ -52,6 +53,17 @@ export function PlaybackControls({
         onClick={onRestart}
       >
         <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+      </Button>
+
+      {/* Jump to Half-Time */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden sm:flex h-6 w-6 sm:h-7 sm:w-7 text-white/50 hover:text-white hover:bg-white/10 rounded-full"
+        onClick={onJumpToHalfTime}
+        title="Jump to Half-Time"
+      >
+        <SkipBack className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
       </Button>
 
       {/* Play/Pause */}
